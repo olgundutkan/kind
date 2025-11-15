@@ -314,11 +314,11 @@ kubectl get pods -n default
 
 ```bash
 # Backend
-cd services/idp-backend
+cd development/idp-backend
 go run .
 
 # Frontend
-cd services/idp-frontend
+cd development/idp-frontend
 npm install          # ilk seferde
 npm run start:dev
 ```
@@ -387,7 +387,7 @@ kubectl apply -f dev-ingress.yaml
 ### 1. IDP Backend (Go + Gin)
 
 ```bash
-cd services/idp-backend
+cd development/idp-backend
 go mod tidy         # İlk kurulumda bağımlılıkları çekin
 DB_HOST=localhost \
 DB_PORT=30432 \
@@ -403,7 +403,7 @@ Varsayılan değerler zaten bu ayarlara işaret ettiği için sadece `go run .` 
 ### 2. IDP Frontend (React + Vite)
 
 ```bash
-cd services/idp-frontend
+cd development/idp-frontend
 npm install
 npm run start:dev
 ```
@@ -498,7 +498,7 @@ idp/
 │       │   └── values.yaml                # PostgreSQL Helm values + Init DBs
 │       └── pgadmin/
 │           └── values.yaml                # pgAdmin Helm values
-├── services/                   # Uygulama servisleri
+├── development/                # Uygulama servisleri
 │   └── service-1/             # Örnek servis
 ├── kind-config.yaml           # Kind cluster yapılandırması
 ├── .gitignore
