@@ -13,6 +13,9 @@ nodes:
   - containerPort: 30808  # Traefik Dashboard
     hostPort: 9000
     protocol: TCP
+  - containerPort: 30432  # PostgreSQL NodePort
+    hostPort: 30432
+    protocol: TCP
   # Mount Docker socket for Docker-in-Docker scenarios
   extraMounts:
   - hostPath: /var/run/docker.sock

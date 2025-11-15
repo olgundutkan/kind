@@ -4,6 +4,12 @@ infrastructure/services/**/certificates/*.key
 infrastructure/services/**/certificates/*.crt
 infrastructure/services/**/certificates/*.b64
 
+# Node.js
+node_modules/
+
+# Build artifacts
+services/idp-backend/tmp/
+
 # IDE
 .idea/
 .vscode/

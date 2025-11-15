@@ -4,9 +4,6 @@
 auth:
   enablePostgresUser: true
   postgresPassword: "postgres"
-  username: "appuser"
-  password: "apppassword"
-  database: "appdb"
 
 primary:
   persistence:
@@ -39,6 +36,7 @@ primary:
         CREATE USER hydra_user WITH PASSWORD 'hydra_pass';
         CREATE USER infra_user WITH PASSWORD 'infra_pass';
         CREATE USER idp_user WITH PASSWORD 'idp_pass';
+        CREATE ROLE admin WITH LOGIN SUPERUSER PASSWORD 'secret';
         
         -- Grant privileges
         GRANT ALL PRIVILEGES ON DATABASE hydra TO hydra_user;
