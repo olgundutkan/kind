@@ -1,0 +1,64 @@
+# PostgreSQL Helm Values
+# Chart: bitnami/postgresql
+
+auth:
+  enablePostgresUser: true
+  postgresPassword: "postgres"
+  username: "appuser"
+  password: "apppassword"
+  database: "appdb"
+
+primary:
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: "standard"
+  
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  service:
+    type: NodePort
+    nodePorts:
+      postgresql: 30432
+
+  initdb:
+    scripts:
+      init.sql: |
+        -- Create additional databases
+        CREATE DATABASE hydra;
+        CREATE DATABASE infra;
+        CREATE DATABASE idp;
+        
+        -- Create users for each database
+        CREATE USER hydra_user WITH PASSWORD 'hydra_pass';
+        CREATE USER infra_user WITH PASSWORD 'infra_pass';
+        CREATE USER idp_user WITH PASSWORD 'idp_pass';
+        
+        -- Grant privileges
+        GRANT ALL PRIVILEGES ON DATABASE hydra TO hydra_user;
+        GRANT ALL PRIVILEGES ON DATABASE infra TO infra_user;
+        GRANT ALL PRIVILEGES ON DATABASE idp TO idp_user;
+        
+        -- Connect to each database and grant schema privileges
+        \c hydra
+        GRANT ALL ON SCHEMA public TO hydra_user;
+        
+        \c infra
+        GRANT ALL ON SCHEMA public TO infra_user;
+        
+        \c idp
+        GRANT ALL ON SCHEMA public TO idp_user;
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+
+volumePermissions:
+  enabled: true

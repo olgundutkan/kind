@@ -134,12 +134,83 @@ kubectl get pods -n traefik
 kubectl get svc -n traefik
 ```
 
+### 6. PostgreSQL Kurulumu
+
+```bash
+# Namespace ve credentials oluşturun
+kubectl apply -f infrastructure/manifests/postgresql/application.yaml
+
+# Bitnami Helm repo ekleyin (yoksa)
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
+# PostgreSQL'i kurun (initial DB'ler ile)
+helm install postgresql bitnami/postgresql \
+  -n postgresql \
+  -f infrastructure/services/postgresql/values.yaml
+
+# PostgreSQL'in çalıştığını kontrol edin
+kubectl get pods -n postgresql
+kubectl get svc -n postgresql
+
+# PostgreSQL'e bağlanın (test için)
+kubectl run postgresql-client --rm --tty -i --restart='Never' \
+  --namespace postgresql \
+  --image docker.io/bitnami/postgresql:16 \
+  --env="PGPASSWORD=postgres" \
+  --command -- psql --host postgresql -U postgres -d postgres -c '\l'
+```
+
+### 7. pgAdmin Kurulumu
+
+```bash
+# Namespace oluşturun
+kubectl apply -f infrastructure/manifests/pgadmin/application.yaml
+
+# TLS secret'ı pgadmin namespace'ine kopyalayın
+kubectl get secret k2-io-tls -n traefik -o yaml | \
+  sed 's/namespace: traefik/namespace: pgadmin/' | \
+  kubectl apply -f -
+
+# Runix pgAdmin Helm repo ekleyin
+helm repo add runix https://helm.runix.net
+helm repo update
+
+# pgAdmin'i kurun
+helm install pgadmin runix/pgadmin4 \
+  -n pgadmin \
+  -f infrastructure/services/pgadmin/values.yaml
+
+# pgAdmin'in çalıştığını kontrol edin
+kubectl get pods -n pgadmin
+kubectl get svc -n pgadmin
+kubectl get ingress -n pgadmin
+```
+
+### 8. DNS Yapılandırmasını Güncelleyin
+
+```bash
+# /etc/hosts'a pgadmin domain'ini ekleyin
+echo "127.0.0.1 pgadmin.local.portal.k2.io" | sudo tee -a /etc/hosts
+```
+
 ## Erişim
 
 - **Traefik Dashboard**: https://traefik.local.portal.k2.io
+- **pgAdmin**: https://pgadmin.local.portal.k2.io (admin@k2.io / secret)
+- **PostgreSQL**: localhost:30432 (postgres / postgres)
 - **HTTP**: http://localhost:80
 - **HTTPS**: https://localhost:443
 - **Traefik API**: http://localhost:9000
+
+### PostgreSQL Veritabanları
+
+Otomatik oluşturulan veritabanları:
+- `postgres` - Varsayılan DB (postgres / postgres)
+- `appdb` - Uygulama DB (appuser / apppassword)
+- `hydra` - Hydra DB (hydra_user / hydra_pass)
+- `infra` - Infrastructure DB (infra_user / infra_pass)
+- `idp` - IDP DB (idp_user / idp_pass)
 
 ## Cluster Yönetimi
 
@@ -160,6 +231,15 @@ docker update --memory=16g --memory-swap=16g --cpus=4 idp-control-plane
 kubectl apply -f infrastructure/manifests/traefik/application.yaml
 kubectl apply -f infrastructure/manifests/traefik/certificates/k2-io-tls-secret.yaml
 helm install traefik traefik/traefik -n traefik -f infrastructure/services/traefik/values.yaml
+
+# PostgreSQL'i yeniden kurun
+kubectl apply -f infrastructure/manifests/postgresql/application.yaml
+helm install postgresql bitnami/postgresql -n postgresql -f infrastructure/services/postgresql/values.yaml
+
+# pgAdmin'i yeniden kurun
+kubectl apply -f infrastructure/manifests/pgadmin/application.yaml
+kubectl get secret k2-io-tls -n traefik -o yaml | sed 's/namespace: traefik/namespace: pgadmin/' | kubectl apply -f -
+helm install pgadmin runix/pgadmin4 -n pgadmin -f infrastructure/services/pgadmin/values.yaml
 ```
 
 ### Traefik'i Güncelleme
@@ -181,16 +261,24 @@ helm install traefik traefik/traefik -n traefik -f infrastructure/services/traef
 idp/
 ├── infrastructure/
 │   ├── manifests/              # Kubernetes manifests
-│   │   └── traefik/
-│   │       ├── application.yaml           # Namespace
-│   │       └── certificates/
-│   │           └── k2-io-tls-secret.yaml  # TLS secret (base64)
+│   │   ├── traefik/
+│   │   │   ├── application.yaml           # Namespace
+│   │   │   └── certificates/
+│   │   │       └── k2-io-tls-secret.yaml  # TLS secret (base64)
+│   │   ├── postgresql/
+│   │   │   └── application.yaml           # Namespace + Credentials
+│   │   └── pgadmin/
+│   │       └── application.yaml           # Namespace
 │   └── services/               # Helm values
-│       └── traefik/
-│           ├── certificates/              # Raw PEM files (gitignore)
-│           │   ├── _wildcard.local.portal.k2.io+1.pem
-│           │   └── _wildcard.local.portal.k2.io+1-key.pem
-│           └── values.yaml                # Helm values
+│       ├── traefik/
+│       │   ├── certificates/              # Raw PEM files (gitignore)
+│       │   │   ├── _wildcard.local.portal.k2.io+1.pem
+│       │   │   └── _wildcard.local.portal.k2.io+1-key.pem
+│       │   └── values.yaml                # Helm values
+│       ├── postgresql/
+│       │   └── values.yaml                # PostgreSQL Helm values + Init DBs
+│       └── pgadmin/
+│           └── values.yaml                # pgAdmin Helm values
 ├── services/                   # Uygulama servisleri
 │   └── service-1/             # Örnek servis
 ├── kind-config.yaml           # Kind cluster yapılandırması
