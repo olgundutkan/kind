@@ -1,15 +1,19 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+
+	"idp-backend/traefikclient"
 )
 
 type Item struct {
@@ -19,7 +23,10 @@ type Item struct {
 	CreatedAt   string `json:"created_at"`
 }
 
-var db *sql.DB
+var (
+	db            *sql.DB
+	traefikClient *traefikclient.Client
+)
 
 func main() {
 	// Load .env file
@@ -62,6 +69,8 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	traefikClient = traefikclient.NewClient(getEnv("TRAEFIK_API_URL", ""))
+
 	// Routes
 	r.GET("/health", healthCheck)
 	r.GET("/api/items", getItems)
@@ -69,6 +78,7 @@ func main() {
 	r.POST("/api/items", createItem)
 	r.PUT("/api/items/:id", updateItem)
 	r.DELETE("/api/items/:id", deleteItem)
+	r.GET("/api/traefik/overview", getTraefikOverview)
 
 	port := getEnv("PORT", "3001")
 	log.Printf("Server starting on port %s", port)
@@ -206,6 +216,40 @@ func deleteItem(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "Item deleted"})
+}
+
+func getTraefikOverview(c *gin.Context) {
+	if traefikClient == nil {
+		c.JSON(500, gin.H{"error": "Traefik client is not initialized"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	routers, err := traefikClient.GetRouters(ctx)
+	if err != nil {
+		c.JSON(502, gin.H{"error": "Failed to fetch routers", "details": err.Error()})
+		return
+	}
+
+	services, err := traefikClient.GetServices(ctx)
+	if err != nil {
+		c.JSON(502, gin.H{"error": "Failed to fetch services", "details": err.Error()})
+		return
+	}
+
+	middlewares, err := traefikClient.GetMiddlewares(ctx)
+	if err != nil {
+		c.JSON(502, gin.H{"error": "Failed to fetch middlewares", "details": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"routers":     routers,
+		"services":    services,
+		"middlewares": middlewares,
+	})
 }
 
 func getEnv(key, fallback string) string {

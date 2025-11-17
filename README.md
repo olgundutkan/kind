@@ -400,6 +400,8 @@ go run .
 
 Varsayılan değerler zaten bu ayarlara işaret ettiği için sadece `go run .` komutu çoğu durumda yeterlidir. Uygulama `http://0.0.0.0:3001` adresinde dinler ve Traefik üzerinden `https://local.portal.k2.io/idp-backend` yoluna bağlanır. Sağlık kontrolü: `https://local.portal.k2.io/idp-backend/health`.
 
+Opsiyonel: Traefik API adresi farklıysa `TRAEFIK_API_URL=http://192.168.1.5:9000/api` gibi bir ortam değişkeni ile override edebilirsiniz (varsayılan `http://localhost:9000/api`).
+
 ### 2. IDP Frontend (React + Vite)
 
 ```bash
@@ -409,6 +411,39 @@ npm run start:dev
 ```
 
 Geliştirme sunucusu `0.0.0.0:3000` üzerinde açılır ve Traefik üzerinden `https://local.portal.k2.io/idp-frontend/` adresinden ulaşabilirsiniz. Vite proxy ayarı `https://local.portal.k2.io/idp-backend` yolundaki istekleri otomatik olarak backend'e aktarır.
+
+- Frontend katmanı Material UI bileşenleri, React Router 7, Redux + Redux-Saga veri akışı ve `react-i18next` tabanlı çok dillilik ile yeniden yapılandırıldı.
+- Sol taraftaki kalıcı sidebar ve breadcrumb bileşeni, `src/config/navigation.js` içerisindeki merkezi menü tanımını kullanır ve kullanıcı rolüne göre filtrelenir.
+- `src/store` klasörü altında actions/reducers/sagas dosya düzeni bulunur; `Traefik Overview` sayfası, backend'in `/api/traefik/overview` endpoint'ini kullanarak router/service/middleware detaylarını gerçek zamanlı görüntüler.
+- Yeni bağımlılıkları almak için `development/idp-frontend` dizininde `npm install` komutunu tekrar çalıştırmayı unutmayın.
+
+## Webpack Tabanlı Yeni IDP Frontend
+
+Webpack + TypeScript + Sass + MUI temelli alternatif arayüz artık depo kökünde `idp-frontend/` dizini altında bulunuyor. Vite/CRA kullanılmadan, aşağıdaki komutlarla çalıştırabilirsiniz:
+
+```bash
+cd idp-frontend
+npm install
+npm run dev           # http://localhost:3002/idp-frontend/ altında servis verir
+npm run build         # prod paketini dist/ içine üretir
+```
+
+Router `basename="/idp-frontend"` ile yapılandırıldığı için rota örnekleri:
+- Ana sayfa: `/idp-frontend/`
+- Liste: `/idp-frontend/items`
+- Detay: `/idp-frontend/items/1`
+- Düzenleme: `/idp-frontend/items/1/edit`
+- Gateway sayfaları: `/idp-frontend/gateway/...`
+
+Kaynak yapısı:
+```
+src/
+  api/                # Axios istemcisi ve items servisleri
+  components/         # MUI tabanlı BaseTable, TabPanel vb.
+  pages/              # Items ve Gateway ekranları (list/create/edit/show)
+  store/              # Redux + Redux-Saga
+  i18n/               # EN/TR çevirileri
+```
 
 ### 3. Host Erişimi Hakkında Notlar
 
@@ -422,6 +457,18 @@ Geliştirme sunucusu `0.0.0.0:3000` üzerinde açılır ve Traefik üzerinden `h
   ```
 
 - Frontend'e doğrudan Vite üzerinden erişmek isterseniz `http://localhost:3000/idp-frontend/` adresini kullanın (taban yolu `/idp-frontend/` olarak ayarlandı).
+
+### 4. Traefik Durumu
+
+- Backend, Traefik HTTP API'sini çağırarak mevcut router/service/middleware listesini `/api/traefik/overview` endpoint'i üzerinden frontend'e sunar.
+- Traefik chart'ında `--api.insecure=true` parametresi açık olduğundan varsayılan olarak `http://localhost:9000/api` adresi kullanılabilir.
+- Frontend arayüzündeki **Traefik Overview** bölümü router'ların kuralları, bağlı servisler ve middleware yapılandırmalarını gerçek zamanlı olarak gösterir; **Refresh** düğmesi ile tekrar sorgulayabilirsiniz.
+- Eğer Traefik API'si farklı bir makinede çalışıyorsa backend'i başlatırken `TRAEFIK_API_URL` ortam değişkenini ayarlamayı unutmayın.
+
+### 5. Gateway Paneli
+
+- `https://local.portal.k2.io/idp-frontend/gateway` rotası, IDP backend'den gelen item verilerini ve Traefik router/service durumunu tek ekranda özetler.
+- Bu ekran üzerinden Items veya Traefik sayfalarına hızlıca geçebilir, son eklenen item'ları ve ilk birkaç router'ı görebilirsiniz.
 
 ### PostgreSQL Veritabanları
 
@@ -500,6 +547,7 @@ idp/
 │           └── values.yaml                # pgAdmin Helm values
 ├── development/                # Uygulama servisleri
 │   └── service-1/             # Örnek servis
+├── idp-frontend/              # Webpack + TS tabanlı bağımsız React arayüzü
 ├── kind-config.yaml           # Kind cluster yapılandırması
 ├── .gitignore
 └── README.md

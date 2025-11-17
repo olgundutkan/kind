@@ -1,0 +1,40 @@
+{
+  "appTitle": "IDP Kontrol Merkezi",
+  "navigation": {
+    "dashboard": "Gösterge Paneli",
+    "items": "Kayıtlar",
+    "traefik": "Traefik",
+    "gateway": "Gateway"
+  },
+  "actions": {
+    "refresh": "Yenile",
+    "create": "Oluştur",
+    "delete": "Sil",
+    "addItem": "Kayıt Ekle",
+    "showDetails": "Detay Göster",
+    "name": "Ad",
+    "description": "Açıklama"
+  },
+  "items": {
+    "title": "Kayıt Yönetimi",
+    "helper": "PostgreSQL içinde CRUD işlemlerini test etmek için örnek kayıtlar oluşturun.",
+    "empty": "Henüz kayıt yok. Yeni bir tane ekleyin.",
+    "createdAt": "Oluşturulma",
+    "confirmDelete": "Bu kaydı silmek istediğinizden emin misiniz?"
+  },
+  "traefik": {
+    "title": "Traefik Genel Bakış",
+    "subtitle": "Traefik dashboard API üzerinden çekilen router, service ve middleware detayları.",
+    "routers": "Router'lar",
+    "services": "Servisler",
+    "middlewares": "Middleware'ler",
+    "noData": "Gösterilecek veri yok"
+  },
+  "dashboard": {
+    "welcome": "Tekrar hoş geldin, {{name}}",
+    "role": "Aktif rol: {{role}}",
+    "itemsTotal": "Toplam Kayıt",
+    "traefikRouters": "Traefik Router",
+    "traefikServices": "Traefik Servis"
+  }
+}

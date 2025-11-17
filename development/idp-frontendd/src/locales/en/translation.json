@@ -1,0 +1,40 @@
+{
+  "appTitle": "IDP Control Center",
+  "navigation": {
+    "dashboard": "Dashboard",
+    "items": "Items",
+    "traefik": "Traefik",
+    "gateway": "Gateway"
+  },
+  "actions": {
+    "refresh": "Refresh",
+    "create": "Create",
+    "delete": "Delete",
+    "addItem": "Add Item",
+    "showDetails": "Show Details",
+    "name": "Name",
+    "description": "Description"
+  },
+  "items": {
+    "title": "Item Management",
+    "helper": "Create demo records and follow CRUD operations stored in PostgreSQL.",
+    "empty": "No items yet. Start by adding a new one.",
+    "createdAt": "Created",
+    "confirmDelete": "Are you sure you want to delete this item?"
+  },
+  "traefik": {
+    "title": "Traefik Overview",
+    "subtitle": "Routers, services and middlewares pulled from Traefik dashboard API.",
+    "routers": "Routers",
+    "services": "Services",
+    "middlewares": "Middlewares",
+    "noData": "No data available"
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {{name}}",
+    "role": "Active role: {{role}}",
+    "itemsTotal": "Total Items",
+    "traefikRouters": "Traefik Routers",
+    "traefikServices": "Traefik Services"
+  }
+}
