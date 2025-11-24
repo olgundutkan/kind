@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import itemsReducer from './itemsSlice'
 import traefikReducer from './traefikSlice'
+import bitbucketReducer from './bitbucketSlice'
 
 const store = configureStore({
   reducer: {
     items: itemsReducer,
     traefik: traefikReducer,
+    bitbucket: bitbucketReducer,
   },
 })
 

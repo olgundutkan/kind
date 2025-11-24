@@ -434,6 +434,7 @@ Router `basename="/idp-frontend"` ile yapılandırıldığı için rota örnekle
 - Detay: `/idp-frontend/items/1`
 - Düzenleme: `/idp-frontend/items/1/edit`
 - Gateway sayfaları: `/idp-frontend/gateway/...`
+- Bitbucket modülü: `/idp-frontend/bitbucket/repositories` (liste), `/create`, `/add`, `/[id]`, `/[id]/edit`
 
 Kaynak yapısı:
 ```
